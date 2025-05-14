@@ -1,0 +1,86 @@
+[build-system]
+requires = ["setuptools>=75", "wheel", "Cython", "numpy>=2.1.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gion"
+version = "0.0.1"
+description = "This module is needed to control geobot"
+requires-python = ">=3.10"
+authors = [
+    {name = "Michael", email = "onisoris@yandex.ru"},
+]
+maintainers = [
+    {name = "Michael", email = "onisoris@yandex.ru"}
+]
+dependencies = [
+    "numpy>=1.22.0,<2.0.0; implementation_name=='pypy'",
+    "numpy>=2.1.0; implementation_name!='pypy'",
+    "paramiko>=3.5.1",
+    "protobuf==5.29.3",
+    "pymavlink>=2.4.42",
+    "pyserial>=3.5",
+    "rich>=13.9.4",
+    "lokky>=0.0.8",
+    "pionsdk @ git+https://github.com/OnisOris/pion.git@dev"
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Build Tools",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13"
+]
+license = "MIT"
+license-files = ["LICENSE*"]
+readme = {file = "README.md", content-type = "text/markdown"}
+
+[project.urls]
+Homepage = "https://github.com/OnisOris/gion"
+Documentation = "https://onisoris.github.io/gion"
+Repository = "https://github.com/OnisOris/gion.git"
+Issues = "https://github.com/OnisOris/gion/issues"
+
+# [project.scripts]
+# start_server_geobot = "swarm_server.scripts.server_geobot:main"
+
+[project.optional-dependencies]
+plotting = [
+    "matplotlib>=3.10.1",
+    "tornado",
+]
+
+[dependency-groups]
+dev = [
+    "furo>=2024.8.6",
+    "pre-commit>=4.2.0",
+    "ruff>=0.9.10",
+    "sphinx>=8.1.3",
+    "uv>=0.6.5",
+]
+
+[tool.ruff]
+line-length = 79
+
+[tool.ruff.format]
+quote-style = "double"
+docstring-code-format = true
+
+[tool.ruff.lint]
+extend-select = [
+  "I",      # isort
+  "D205",   # pydocstyle
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.cibuildwheel.environment.arm64]
+NPY_BLAS_ORDER = "openblas"
+NPY_LAPACK_ORDER = "openblas"
+
+[tool.setuptools]
+include-package-data = true
