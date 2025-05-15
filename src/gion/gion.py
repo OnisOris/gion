@@ -135,5 +135,5 @@ class Gion(Pion):
         # 4. Шкалирование в PWM
         pwm_R = max(-255, min(255, int((omega_R / omega_max) * 255)))
         pwm_L = max(-255, min(255, int((omega_L / omega_max) * 255)))
-
+        print(f"l = {pwm_L}, r = {pwm_R}")
         return pwm_L, pwm_R
