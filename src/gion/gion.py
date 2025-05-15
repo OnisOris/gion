@@ -12,6 +12,7 @@ from pionfunc.functions import (
     vector_reached,
 )
 
+
 class Gion(Pion):
     def arm(self) -> None:
         raise NotImplementedError(
@@ -75,9 +76,9 @@ class Gion(Pion):
         elif msg.get_type() == "BATTERY_STATUS":
             self.battery_voltage = msg.voltages[0] / 100
 
-    def set_speed_for_wheels(self,
-                  left_wheel_speed: int,
-                  right_wheel_speed: int) -> None:
+    def set_speed_for_wheels(
+        self, left_wheel_speed: int, right_wheel_speed: int
+    ) -> None:
         """
         Задание скорости для двух колес
 
@@ -87,19 +88,20 @@ class Gion(Pion):
         self.mavlink_socket.mav.rc_channels_override_send(
             self.mavlink_socket.target_system,
             self.mavlink_socket.target_component,
-            255,    # channel 1
+            255,  # channel 1
             255,  # channel 2
-            255,    # channel 3
-            255,    # channel 4
+            255,  # channel 3
+            255,  # channel 4
             right_wheel_speed + 255,  # channel 5
             -left_wheel_speed + 255,  # channel 6
             255,  # channel 7
-            255   # channel 8
+            255,  # channel 8
         )
 
-    def send_speed(self,
-        vx: float, 
-        vy: float, 
+    def send_speed(
+        self,
+        vx: float,
+        vy: float,
         vz: float,
     ) -> None:
         """
@@ -113,31 +115,30 @@ class Gion(Pion):
         :type vz: float
         :return: None
         """
-        w_l, w_r = self.compute_wheels(vx, vy, self.attitude[2], 0.07, 0.1, 255)
+        w_l, w_r = self.compute_wheels(
+            vx, vy, self.attitude[2], 0.07, 0.1, 255
+        )
         self.set_speed_for_wheels(w_l, w_r)
-
 
     def compute_wheels(self, vx, vy, theta, r, b, omega_max):
         """
         Пересчёт вектора скорости (vx, vy) в целевые значения для колёс.
         """
         # 1. Ротация в локальную систему
-        vx_r = np.cos(theta) * vx + np.sin(theta) * vy   
-        vy_r = -np.sin(theta) * vx + np.cos(theta) * vy 
+        vx_r = np.cos(theta) * vx + np.sin(theta) * vy
+        vy_r = -np.sin(theta) * vx + np.cos(theta) * vy
 
         # 2. Продольная и угловая скорости
-        V = vx_r                                             
-        L = b / 2                                            
-        omega = vy_r / L                                
+        V = vx_r
+        L = b / 2
+        omega = vy_r / L
 
         # 3. Обратная кинематика
-        omega_R = (V + omega * L) / r                      
-        omega_L = (V - omega * L) / r                  
+        omega_R = (V + omega * L) / r
+        omega_L = (V - omega * L) / r
 
         # 4. Шкалирование в PWM
-        pwm_R = max(-255, min(255, int((omega_R / omega_max) * 255)))  
+        pwm_R = max(-255, min(255, int((omega_R / omega_max) * 255)))
         pwm_L = max(-255, min(255, int((omega_L / omega_max) * 255)))
-
+        print(f"l = {pwm_L}, r = {pwm_R}")
         return pwm_L, pwm_R
-
-
