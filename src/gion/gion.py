@@ -1,17 +1,15 @@
-from pion import Pion
+from typing import Optional
 
 import numpy as np
+from pion import Pion
 from typing import Annotated, Any, Optional, Tuple, Union
 from pymavlink import mavutil
 
 from pionfunc.functions import (
-    create_connection,
-    scalar_reached,
-    start_threading,
     update_array,
     update_vector,
-    vector_reached,
 )
+
 
 class Gion(Pion):
     def arm(self) -> None:
@@ -97,12 +95,12 @@ class Gion(Pion):
             255,  # channel 7
             255   # channel 8
         )
-        
-    def send_speed(self,
-        vx: float, 
-        vy: float, 
+
+    def send_speed(
+        self,
+        vx: float,
+        vy: float,
         vz: float,
-        yaw_rate: float,
     ) -> None:
         """
         Метод задает вектор скорости геоботу. Отсылать необходимо в цикле.
@@ -115,31 +113,32 @@ class Gion(Pion):
         :type vz: float
         :return: None
         """
-        w_l, w_r = self.compute_wheels(vx, vy, self.attitude[2], 0.07, 0.1, 255)
+        w_l, w_r = self.compute_wheels(
+            vx, vy, self.attitude[2], 0.07, 0.1, 255
+        )
         self.set_speed_for_wheels(w_l, w_r)
-
 
     def compute_wheels(self, vx, vy, theta, r, b, omega_max):
         """
         Пересчёт вектора скорости (vx, vy) в целевые значения для колёс.
         """
         # 1. Ротация в локальную систему
-        vx_r = np.cos(theta) * vx + np.sin(theta) * vy   
-        vy_r = -np.sin(theta) * vx + np.cos(theta) * vy 
+        vx_r = np.cos(theta) * vx + np.sin(theta) * vy
+        vy_r = -np.sin(theta) * vx + np.cos(theta) * vy
 
         # 2. Продольная и угловая скорости
-        V = vx_r                                             
-        L = b / 2                                            
-        omega = vy_r / L                                
+        V = vx_r
+        L = b / 2
+        omega = vy_r / L
 
         # 3. Обратная кинематика
-        omega_R = (V + omega * L) / r                      
-        omega_L = (V - omega * L) / r                  
+        omega_R = (V + omega * L) / r
+        omega_L = (V - omega * L) / r
 
         # 4. Шкалирование в PWM
-        pwm_R = max(-255, min(255, int((omega_R / omega_max) * 255)))  
+        pwm_R = max(-255, min(255, int((omega_R / omega_max) * 255)))
         pwm_L = max(-255, min(255, int((omega_L / omega_max) * 255)))
-
+        print(f"l = {pwm_L}, r = {pwm_R}")
         return pwm_L, pwm_R
 
     def led_control(self, r=0, g=0, b=0, led_id=255):  # 255 all led
