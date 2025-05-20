@@ -22,7 +22,7 @@ dependencies = [
     "pyserial>=3.5",
     "rich>=13.9.4",
     "lokky>=0.0.8",
-    "pionsdk @ git+https://github.com/OnisOris/pion.git@dev"
+    "pionsdk",
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -84,3 +84,6 @@ NPY_LAPACK_ORDER = "openblas"
 
 [tool.setuptools]
 include-package-data = true
+
+[tool.uv.sources]
+pionsdk = { git = "https://github.com/OnisOris/pion.git", rev = "dev" }
