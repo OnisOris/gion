@@ -40,22 +40,12 @@ class Gion(Pion):
         :param src_component: Источник данных, по которому фильтруется сообщение.
         :return: None
         """
-        # Проверяем источник компонента, если задан
-        if self.checking_components:
-            if (
-                src_component is not None
-                and msg._header.srcComponent != src_component
-            ):
-                return
         if msg.get_type() == "LOCAL_POSITION_NED":
-            if self.dimension == 3:
-                self.position = np.array(
-                    [msg.x, msg.y, msg.z, msg.vx, msg.vy, msg.vz]
-                )
-            else:
-                self.position = np.array([msg.x, msg.y, msg.vx, msg.vy])
+            self.position = np.array(
+                [msg.x, msg.y, msg.z, msg.vx, msg.vy, msg.vz]
+            )
             self.last_points = update_array(
-                self.last_points, self.position[0 : self.dimension]
+                self.last_points, self.position[0:3]
             )
         elif msg.get_type() == "ATTITUDE":
             self.attitude = np.array(
