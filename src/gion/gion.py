@@ -115,8 +115,8 @@ class Gion(Pion):
             command=mavutil.mavlink.MAV_CMD_USER_5,
             param1=vx,
             param2=vy,
-            traget_system=self.mavlink_socket.target_system,
-            traget_component=self.mavlink_socket.target_component,
+            target_system=self.mavlink_socket.target_system,
+            target_component=self.mavlink_socket.target_component,
         )
 
     def compute_wheels(self, vx, vy, theta, r, b, omega_max):

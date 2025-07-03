@@ -32,4 +32,4 @@ elif "-r" in args:
     drone.reboot_board()
 else:
     print("---")
-    drone.send_speed(float(args[2]), float(args[3]), 0)
+    drone.send_speed(float(args[2]), float(args[3]), 0, 0)

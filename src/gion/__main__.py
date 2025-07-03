@@ -7,7 +7,7 @@ from pionfunc.functions import get_local_ip
 from rich import inspect
 from swarm_server import SwarmCommunicator
 
-from .gion import Gion
+from gion import Gion
 
 params = {
     "kp": np.array([[1.2, 1.2, 1, 1, 1, 1]]) * 0.15,
