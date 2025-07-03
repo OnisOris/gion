@@ -2,13 +2,11 @@ from typing import Optional
 
 import numpy as np
 from pion import Pion
-from typing import Annotated, Any, Optional, Tuple, Union
-from pymavlink import mavutil
-
 from pionfunc.functions import (
     update_array,
     update_vector,
 )
+from pymavlink import mavutil
 
 
 class Gion(Pion):
@@ -74,9 +72,9 @@ class Gion(Pion):
         elif msg.get_type() == "BATTERY_STATUS":
             self.battery_voltage = msg.voltages[0] / 100
 
-    def set_speed_for_wheels(self,
-                  left_wheel_speed: int,
-                  right_wheel_speed: int) -> None:
+    def set_speed_for_wheels(
+        self, left_wheel_speed: int, right_wheel_speed: int
+    ) -> None:
         """
         Задание скорости для двух колес
 
@@ -86,24 +84,21 @@ class Gion(Pion):
         self.mavlink_socket.mav.rc_channels_override_send(
             self.mavlink_socket.target_system,
             self.mavlink_socket.target_component,
-            255,    # channel 1
+            255,  # channel 1
             255,  # channel 2
-            255,    # channel 3
-            255,    # channel 4
+            255,  # channel 3
+            255,  # channel 4
             right_wheel_speed + 255,  # channel 5
             -left_wheel_speed + 255,  # channel 6
             255,  # channel 7
-            255   # channel 8
+            255,  # channel 8
         )
 
     def send_speed(
-        self,
-        vx: float,
-        vy: float,
-        vz: float,
+        self, vx: float, vy: float, vz: float, yaw_rate: float
     ) -> None:
         """
-        Метод задает вектор скорости геоботу. Отсылать необходимо в цикле.
+        Метод задает вектор скорости дрону. Отсылать необходимо в цикле.
 
         :param vx: скорость по оси x (м/с)
         :type vx: float
@@ -111,12 +106,18 @@ class Gion(Pion):
         :type vy: float
         :param vz:  скорость по оси z (м/с)
         :type vz: float
+        :param yaw_rate:  скорость поворота по оси z (рад/с)
+        :type yaw_rate: float
         :return: None
         """
-        w_l, w_r = self.compute_wheels(
-            vx, vy, self.attitude[2], 0.07, 0.1, 255
+        return self._send_command_long(
+            command_name="ABS_SPEED",
+            command=mavutil.mavlink.MAV_CMD_USER_5,
+            param1=vx,
+            param2=vy,
+            traget_system=self.mavlink_socket.target_system,
+            traget_component=self.mavlink_socket.target_component,
         )
-        self.set_speed_for_wheels(w_l, w_r)
 
     def compute_wheels(self, vx, vy, theta, r, b, omega_max):
         """
@@ -160,11 +161,6 @@ class Gion(Pion):
         except ValueError:
             command = False
         if command:
-            if led_id == all_led:
-                led_id_print = 'all'
-            else:
-                led_id_print = led_id
-
             self._send_command_long(
                 f"{self.name} led_control",  # command_name
                 mavutil.mavlink.MAV_CMD_USER_1,  # command
@@ -173,7 +169,7 @@ class Gion(Pion):
                 param3=led_value[1],  # param3
                 param4=led_value[2],  # param4
                 target_system=self.mavlink_socket.target_system,
-                target_component=self.mavlink_socket.target_component
+                target_component=self.mavlink_socket.target_component,
             )
         else:
             print(f"{self.name} <LED> Wrong LED values")
@@ -192,6 +188,5 @@ class Gion(Pion):
             param5=mode,  # param5
             param6=timer,  # param6
             target_system=self.mavlink_socket.target_system,
-            target_component=self.mavlink_socket.target_component
+            target_component=self.mavlink_socket.target_component,
         )
-
