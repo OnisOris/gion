@@ -28,7 +28,6 @@ classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Build Tools",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -44,8 +43,8 @@ Documentation = "https://onisoris.github.io/gion"
 Repository = "https://github.com/OnisOris/gion.git"
 Issues = "https://github.com/OnisOris/gion/issues"
 
-# [project.scripts]
-# start_server_geobot = "swarm_server.scripts.server_geobot:main"
+[project.scripts]
+start_server_geobot = "gion.__main__:main"
 
 [project.optional-dependencies]
 plotting = [
