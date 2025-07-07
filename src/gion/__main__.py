@@ -34,25 +34,24 @@ def main():
     parser.add_argument(
         "--ip",
         type=str,
-        default="localhost",
+        default=get_local_ip(),
         help="ip устройства (например, 10.1.100.121)",
     )
     parser.add_argument(
         "--port",
         type=int,
-        default=8000,
+        default=5656,
         help="Порт устройства, например 5656",
     )
     args = parser.parse_args()
-    ip = get_local_ip()
 
     geobot = Gion(
         ip=args.ip,
         # mavlink_port=args.port,
         connection_method="udpout",
-        name=f"Geobot-{ip}",
+        name=f"Geobot-{args.ip}",
         dt=0.001,
-        logger=False,
+        logger=True,
         max_speed=0.5,
     )
     inspect(geobot, methods=True)
@@ -66,7 +65,7 @@ def main():
         params=params,
     )
     swarm_comm.start()
-    print(f"SwarmCommunicator запущен для {geobot.name} с IP {ip}")
+    print(f"SwarmCommunicator запущен для {geobot.name} с IP {args.ip}")
 
     try:
         while True:
