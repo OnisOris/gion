@@ -52,7 +52,7 @@ class Gion(Pion):
                 [
                     0,
                     0,
-                    msg.yaw,
+                    msg.yaw + np.pi / 2,
                     0,
                     0,
                     msg.yawspeed,
