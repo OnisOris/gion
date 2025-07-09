@@ -25,8 +25,6 @@ install_package() {
 # Установка зависимостей
 install_package python3-dev
 install_package git
-install_package python3.13
-install_package python3.13-dev
 
 REAL_USER=$(logname)
 REAL_HOME=$(eval echo "~$REAL_USER")
@@ -39,13 +37,6 @@ INSTALL_DIR="$REAL_HOME/gion"
 VENV_DIR="$INSTALL_DIR/.venv"
 RUN_SCRIPT_PATH="/usr/local/bin/gion-run.sh"
 
-# Находим полный путь к Python 3.13
-PYTHON_BIN=$(which python3.13)
-if [ -z "$PYTHON_BIN" ]; then
-    echo "❌ Python 3.13 не найден!"
-    exit 1
-fi
-echo "Используем интерпретатор: $PYTHON_BIN"
 
 # Добавляем директорию в безопасные для Git
 echo "🔒 Добавляем репозиторий в безопасные директории Git..."
