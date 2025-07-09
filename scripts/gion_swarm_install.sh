@@ -10,6 +10,22 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
+if dpkg -s python3-dev &>/dev/null; then
+    echo "✅ python3-dev уже установлен."
+else
+    echo "🔧 Устанавливаем python3-dev..."
+    apt update
+    apt install -y python3-dev
+fi
+
+if dpkg -s git &>/dev/null; then
+    echo "✅ git уже установлен."
+else
+    echo "🔧 Устанавливаем git..."
+    apt update
+    apt install -y git
+fi
+
 git clone https://github.com/OnisOris/gion
 
 echo "Выберите версию Python для виртуального окружения:"
@@ -51,21 +67,7 @@ VENV_DIR="$INSTALL_DIR/.venv"
 echo "Создаём виртуальное окружение..."
 sudo -u "$REAL_USER" env PATH="$REAL_PATH" bash -c "\"$REAL_HOME/.local/bin/uv\" venv --python $PYTHON_VER --prompt pion \"$VENV_DIR\""
 
-if dpkg -s python3-dev &>/dev/null; then
-    echo "✅ python3-dev уже установлен."
-else
-    echo "🔧 Устанавливаем python3-dev..."
-    apt update
-    apt install -y python3-dev
-fi
 
-if dpkg -s git &>/dev/null; then
-    echo "✅ git уже установлен."
-else
-    echo "🔧 Устанавливаем git..."
-    apt update
-    apt install -y git
-fi
 
 echo "Устанавливаем pionsdk с Git (ветка dev)..."
 sudo -u "$REAL_USER" env PATH="$REAL_PATH" bash -c "source \"$VENV_DIR/bin/activate\" && \"$REAL_HOME/.local/bin/uv\" pip install \"git+https://github.com/OnisOris/gion.git\""
