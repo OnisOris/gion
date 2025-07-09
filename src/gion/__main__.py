@@ -28,13 +28,18 @@ params = {
 
 
 def main():
+    ip = get_local_ip()
+    for i in range(15):
+        if ip != "127.0.0.1":
+            break
+        ip = get_local_ip()
     parser = argparse.ArgumentParser(
         description="Запуск универсального сервера для управления единицей роя"
     )
     parser.add_argument(
         "--ip",
         type=str,
-        default=get_local_ip(),
+        default=ip,
         help="ip устройства (например, 10.1.100.121)",
     )
     parser.add_argument(
