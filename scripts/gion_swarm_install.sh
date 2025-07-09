@@ -10,21 +10,23 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
-if dpkg -s python3-dev &>/dev/null; then
-    echo "✅ python3-dev уже установлен."
-else
-    echo "🔧 Устанавливаем python3-dev..."
+# Функция для установки пакетов
+install_package() {
+  local package=$1
+  if dpkg -s "$package" &>/dev/null; then
+    echo "✅ $package уже установлен."
+  else
+    echo "🔧 Устанавливаем $package..."
     apt update
-    apt install -y python3-dev
-fi
+    apt install -y "$package"
+  fi
+}
 
-if dpkg -s git &>/dev/null; then
-    echo "✅ git уже установлен."
-else
-    echo "🔧 Устанавливаем git..."
-    apt update
-    apt install -y git
-fi
+# Установка зависимостей
+install_package python3-dev
+install_package git
+install_package python3.13
+install_package python3.13-dev
 
 REAL_USER=$(logname)
 REAL_HOME=$(eval echo "~$REAL_USER")
@@ -35,6 +37,15 @@ echo "Домашняя директория: $REAL_HOME"
 
 INSTALL_DIR="$REAL_HOME/gion"
 VENV_DIR="$INSTALL_DIR/.venv"
+RUN_SCRIPT_PATH="/usr/local/bin/gion-run.sh"
+
+# Находим полный путь к Python 3.13
+PYTHON_BIN=$(which python3.13)
+if [ -z "$PYTHON_BIN" ]; then
+    echo "❌ Python 3.13 не найден!"
+    exit 1
+fi
+echo "Используем интерпретатор: $PYTHON_BIN"
 
 # Добавляем директорию в безопасные для Git
 echo "🔒 Добавляем репозиторий в безопасные директории Git..."
@@ -60,9 +71,6 @@ else
     chown -R "$REAL_USER:$REAL_USER" "$INSTALL_DIR"
 fi
 
-PYTHON_VER="3.13"
-echo "Используется Python версии $PYTHON_VER"
-
 if sudo -u "$REAL_USER" env PATH="$REAL_PATH" bash -c 'command -v uv &>/dev/null'; then
     echo "✅ uv уже установлен. Установка не требуется."
 else
@@ -81,13 +89,43 @@ mkdir -p "$VENV_DIR"
 chown -R "$REAL_USER:$REAL_USER" "$VENV_DIR"
 
 echo "🐍 Создаём виртуальное окружение..."
-sudo -u "$REAL_USER" env PATH="$REAL_PATH" bash -c "\"$REAL_HOME/.local/bin/uv\" venv --python $PYTHON_VER --prompt pion \"$VENV_DIR\""
+sudo -u "$REAL_USER" env PATH="$REAL_PATH" bash -c "\"$REAL_HOME/.local/bin/uv\" venv --python \"$PYTHON_BIN\" --prompt pion \"$VENV_DIR\""
+
+echo "📦 Устанавливаем зависимости сборки..."
+sudo -u "$REAL_USER" env PATH="$REAL_PATH" bash -c "source \"$VENV_DIR/bin/activate\" && \"$REAL_HOME/.local/bin/uv\" pip install setuptools wheel Cython numpy"
+
+echo "📦 Устанавливаем pionsdk..."
+sudo -u "$REAL_USER" env PATH="$REAL_PATH" bash -c "source \"$VENV_DIR/bin/activate\" && \"$REAL_HOME/.local/bin/uv\" pip install \"git+https://github.com/OnisOris/pion.git@dev\""
 
 echo "📦 Устанавливаем gion..."
 sudo -u "$REAL_USER" env PATH="$REAL_PATH" bash -c "source \"$VENV_DIR/bin/activate\" && \"$REAL_HOME/.local/bin/uv\" pip install -e \"$INSTALL_DIR\""
 
+echo "📝 Создаём скрипт запуска в $RUN_SCRIPT_PATH"
+
+# Создаем скрипт запуска
+cat > "$RUN_SCRIPT_PATH" << EOF
+#!/bin/bash
+set -e
+
+# Переходим в директорию проекта
+cd "$INSTALL_DIR"
+
+# Обновляем репозиторий
+echo "🔄 Обновляем репозиторий через git pull --rebase..."
+git pull --rebase
+
+# Запускаем приложение
+echo "🚀 Запускаем приложение..."
+"$VENV_DIR/bin/python" -m gion.__main__
+EOF
+
+# Даем права на выполнение
+chmod +x "$RUN_SCRIPT_PATH"
+echo "✅ Скрипт запуска создан: $RUN_SCRIPT_PATH"
+
 echo "⚙️ Создаём systemd unit файл /etc/systemd/system/gion.service..."
 
+# Обновляем сервис для использования скрипта запуска
 cat > /etc/systemd/system/gion.service << EOF
 [Unit]
 Description=Pion Autostart Service
@@ -95,7 +133,7 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=$VENV_DIR/bin/python -m gion.__main__
+ExecStart=$RUN_SCRIPT_PATH
 WorkingDirectory=$INSTALL_DIR
 Restart=always
 RestartSec=5
@@ -112,7 +150,14 @@ systemctl daemon-reload
 systemctl enable gion.service
 systemctl restart gion.service
 
-systemctl enable geobot.service
-systemctl restart geobot.service
+# Добавляем geobot.service, если он установлен
+if [ -f "/etc/systemd/system/geobot.service" ]; then
+  echo "🔄 Активируем geobot.service..."
+  systemctl enable geobot.service
+  systemctl restart geobot.service
+else
+  echo "⚠️ geobot.service не найден. Пропускаем активацию."
+fi
 
 echo "✅ Установка завершена. Сервис 'gion.service' активен под пользователем $REAL_USER."
+echo "✅ Скрипт запуска доступен по пути: $RUN_SCRIPT_PATH"
