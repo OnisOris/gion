@@ -58,6 +58,15 @@ else
     apt update
     apt install -y python3-dev
 fi
+
+if dpkg -s git &>/dev/null; then
+    echo "✅ git уже установлен."
+else
+    echo "🔧 Устанавливаем git..."
+    apt update
+    apt install -y git
+fi
+
 echo "Устанавливаем pionsdk с Git (ветка dev)..."
 sudo -u "$REAL_USER" env PATH="$REAL_PATH" bash -c "source \"$VENV_DIR/bin/activate\" && \"$REAL_HOME/.local/bin/uv\" pip install \"git+https://github.com/OnisOris/gion.git\""
 
