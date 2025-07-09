@@ -26,31 +26,42 @@ else
     apt install -y git
 fi
 
-git clone https://github.com/OnisOris/gion
-
-echo "Выберите версию Python для виртуального окружения:"
-echo "1) 3.10"
-echo "2) 3.11"
-echo "3) 3.12"
-echo "4) 3.13"
-read -p "Введите номер [1-4]: " PY_VER_CHOICE
-
-case "$PY_VER_CHOICE" in
-    1) PYTHON_VER="3.10" ;;
-    2) PYTHON_VER="3.11" ;;
-    3) PYTHON_VER="3.12" ;;
-    4) PYTHON_VER="3.13" ;;
-    *) echo "Неверный выбор. Прерывание установки."; exit 1 ;;
-esac
-
-echo "Используется Python версии $PYTHON_VER"
-
 REAL_USER=$(logname)
 REAL_HOME=$(eval echo "~$REAL_USER")
 REAL_PATH="$REAL_HOME/.local/bin:$PATH"
 
 echo "Пользователь: $REAL_USER"
 echo "Домашняя директория: $REAL_HOME"
+
+INSTALL_DIR="$REAL_HOME/gion"
+VENV_DIR="$INSTALL_DIR/.venv"
+
+# Добавляем директорию в безопасные для Git
+echo "🔒 Добавляем репозиторий в безопасные директории Git..."
+sudo -u "$REAL_USER" git config --global --add safe.directory "$INSTALL_DIR"
+
+# Обработка существующего репозитория
+if [ -d "$INSTALL_DIR" ]; then
+    echo "🔄 Обновляем существующий репозиторий..."
+    cd "$INSTALL_DIR"
+
+    # Сбрасываем изменения и переключаем на main
+    sudo -u "$REAL_USER" git reset --hard
+    sudo -u "$REAL_USER" git clean -fd
+    sudo -u "$REAL_USER" git checkout main
+    sudo -u "$REAL_USER" git pull --rebase
+
+    # Исправляем права доступа
+    chown -R "$REAL_USER:$REAL_USER" .
+    cd ..
+else
+    echo "⏬ Клонируем репозиторий..."
+    sudo -u "$REAL_USER" git clone https://github.com/OnisOris/gion
+    chown -R "$REAL_USER:$REAL_USER" "$INSTALL_DIR"
+fi
+
+PYTHON_VER="3.13"
+echo "Используется Python версии $PYTHON_VER"
 
 if sudo -u "$REAL_USER" env PATH="$REAL_PATH" bash -c 'command -v uv &>/dev/null'; then
     echo "✅ uv уже установлен. Установка не требуется."
@@ -59,25 +70,28 @@ else
     sudo -u "$REAL_USER" bash -c 'curl -LsSf https://astral.sh/uv/install.sh | sh'
 fi
 
+# Удаляем старое окружение если существует
+if [ -d "$VENV_DIR" ]; then
+    echo "🗑️ Удаляем старое виртуальное окружение..."
+    rm -rf "$VENV_DIR"
+fi
 
-INSTALL_DIR="$REAL_HOME/gion"
-VENV_DIR="$INSTALL_DIR/.venv"
+# Создаем директорию с правильными правами
+mkdir -p "$VENV_DIR"
+chown -R "$REAL_USER:$REAL_USER" "$VENV_DIR"
 
-
-echo "Создаём виртуальное окружение..."
+echo "🐍 Создаём виртуальное окружение..."
 sudo -u "$REAL_USER" env PATH="$REAL_PATH" bash -c "\"$REAL_HOME/.local/bin/uv\" venv --python $PYTHON_VER --prompt pion \"$VENV_DIR\""
 
+echo "📦 Устанавливаем gion..."
+sudo -u "$REAL_USER" env PATH="$REAL_PATH" bash -c "source \"$VENV_DIR/bin/activate\" && \"$REAL_HOME/.local/bin/uv\" pip install -e \"$INSTALL_DIR\""
 
-
-echo "Устанавливаем pionsdk с Git (ветка dev)..."
-sudo -u "$REAL_USER" env PATH="$REAL_PATH" bash -c "source \"$VENV_DIR/bin/activate\" && \"$REAL_HOME/.local/bin/uv\" pip install \"git+https://github.com/OnisOris/gion.git\""
-
-echo "Создаём systemd unit файл /etc/systemd/system/gion.service..."
+echo "⚙️ Создаём systemd unit файл /etc/systemd/system/gion.service..."
 
 cat > /etc/systemd/system/gion.service << EOF
 [Unit]
 Description=Pion Autostart Service
-After=network.target geobot.service
+After=network.target
 
 [Service]
 Type=simple
@@ -93,11 +107,12 @@ User=$REAL_USER
 WantedBy=multi-user.target
 EOF
 
-
-echo "Перезагружаем systemd и запускаем сервис..."
-systemctl daemon-reexec
+echo "🔄 Перезагружаем systemd и запускаем сервис..."
 systemctl daemon-reload
 systemctl enable gion.service
 systemctl restart gion.service
+
+systemctl enable geobot.service
+systemctl restart geobot.service
 
 echo "✅ Установка завершена. Сервис 'gion.service' активен под пользователем $REAL_USER."
