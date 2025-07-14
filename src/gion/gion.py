@@ -180,3 +180,16 @@ class Gion(Pion):
             target_system=self.mavlink_socket.target_system,
             target_component=self.mavlink_socket.target_component,
         )
+
+    def stop_moving(self) -> None:
+        """
+        Останавливает все движение
+
+        :return: None
+        """
+        print("STOP_MOVING")
+        self.speed_flag = False
+        self.rc_flag = False
+        self.tracking = False
+        self.point_reached = True
+        self.send_speed(0, 0, 0, 0)
