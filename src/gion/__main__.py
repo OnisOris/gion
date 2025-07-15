@@ -15,7 +15,7 @@ params = {
     "kd": np.array([[1, 1, 1, 1, 1, 1]]) * 2,
     "attraction_weight": 1.0,
     "cohesion_weight": 1.0,
-    "current_velocity_weight": 8,
+    "current_velocity_weight": 9,
     "alignment_weight": 1.0,
     "repulsion_weight": 20.0,
     "unstable_weight": 1.0,
