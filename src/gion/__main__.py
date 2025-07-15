@@ -12,7 +12,7 @@ from gion import Gion
 params = {
     "kp": np.array([[0.2, 0.2, 0.1, 0.1, 0.1, 0.1]]) * 0.15,
     "ki": np.zeros((1, 1)),
-    "kd": np.array([[1, 1, 1, 1, 1, 1]]) * 2,
+    "kd": np.array([[0.5, 0.5, 0.5, 0.5, 0.5, 0.5]]) * 2,
     "attraction_weight": 1.0,
     "cohesion_weight": 1.0,
     "current_velocity_weight": 9,
