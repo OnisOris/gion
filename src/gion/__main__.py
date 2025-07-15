@@ -10,9 +10,8 @@ from swarm_server import SwarmCommunicator
 from gion import Gion
 
 params = {
-    # "kp": np.array([[1.2, 1.2, 1, 1, 1, 1]]) * 0.15,
-    "kp": np.array([[0.6, 0.6, 0.5, 0.5, 0.5, 0.5]]) * 0.15,
-    "ki": np.zeros((2, 3)),
+    "kp": np.array([[1.2, 1.2, 1, 1, 1, 1]]) * 0.15,
+    "ki": np.zeros((0, 0)),
     "kd": np.array([[1, 1, 1, 1, 1, 1]]) * 2,
     "attraction_weight": 1.0,
     "cohesion_weight": 1.0,
