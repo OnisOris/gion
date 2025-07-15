@@ -193,3 +193,6 @@ class Gion(Pion):
         self.tracking = False
         self.point_reached = True
         self.send_speed(0, 0, 0, 0)
+
+    def stop(self) -> None:
+        self.stop_moving()
