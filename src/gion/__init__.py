@@ -1,3 +1,3 @@
-from .gion import Gion
+from .gion import Gion, SwarmCommunicatorGion
 
-__all__ = ["Gion"]
+__all__ = ["Gion", "SwarmCommunicatorGion"]
