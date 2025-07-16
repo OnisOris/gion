@@ -1,17 +1,167 @@
-from typing import Optional
+from typing import Optional, Any
 
 import numpy as np
 from pion import Pion
 from pionfunc.functions import (
     update_array,
     update_vector,
+    get_local_ip,
+    start_threading,
 )
 from pymavlink import mavutil
-from swarm_server import SwarmCommunicator
+from swarm_server import SwarmCommunicator, CMD
 
 
 class SwarmCommunicatorGion(SwarmCommunicator):
-    pass
+    def process_incoming_state(self, state: Any) -> None:
+        """
+        Функция обработчик входящих сообщений
+
+        :return: None
+        :rtype: None
+        """
+
+        if state.target_id:
+            if self.unique_id != int(state.target_id):
+                return
+        elif state.group_id:
+            if state.group_id != self.group_id:
+                return
+        if hasattr(state, "command") and state.command != 0:
+            command = CMD(state.command)
+
+            if command == CMD.SET_SPEED:
+                try:
+                    vx, vy, vz, yaw_rate = state.data
+                    self.control_object.send_speed(vx, vy, vz, yaw_rate)
+                    print(
+                        f"Команда set_speed выполнена: {vx}, {vy}, {vz}, {yaw_rate}"
+                    )
+                except Exception as e:
+                    print("Ошибка при выполнении set_speed:", e)
+            elif command == CMD.SET_GROUP:
+                try:
+                    new_group = int(state.data[0])
+                    self.group_id = new_group
+                    self.control_object.name = f"{get_local_ip()}, unid: {self.unique_id}, gr: {self.group_id}"
+                    print(
+                        f"Группа успешно изменена на: {new_group} для дрона с id {self.unique_id}"
+                    )
+                except Exception as e:
+                    print("Ошибка при изменении группы:", e)
+            elif command == CMD.GOTO:
+                try:
+                    x, y, z, yaw = state.data
+                    if self.control_object.tracking:
+                        print(f"Smart tracking to {x, y, z, yaw}")
+                        self.control_object.target_point = np.array(
+                            [x, y, z, yaw]
+                        )
+                    else:
+                        self.stop_trp()
+                        self.control_object.goto_from_outside(x, y, z, yaw)
+                        print(f"Команда goto выполнена: {x}, {y}, {z}, {yaw}")
+                except Exception as e:
+                    print("Ошибка при выполнении goto:", e)
+            elif command == CMD.TAKEOFF:
+                self.stop_trp()
+                try:
+                    self.control_object.takeoff()
+                except NotImplementedError:
+                    print("У объекта нет takeoff")
+                print("Команда takeoff выполнена")
+            elif command == CMD.LAND:
+                self.stop_trp()
+                try:
+                    self.control_object.land()
+                except NotImplementedError:
+                    print("У объекта нет land")
+                print("Команда land выполнена")
+            elif command == CMD.ARM:
+                self.stop_trp()
+                try:
+                    self.control_object.arm()
+                except NotImplementedError:
+                    print("У объекта нет arm")
+                print("Команда arm выполнена")
+            elif command == CMD.DISARM:
+                self.stop_trp()
+                try:
+                    self.control_object.disarm()
+                except NotImplementedError:
+                    print("У объекта нет disarm")
+                print("Команда disarm выполнена")
+            elif command == CMD.STOP:
+                self.stop_trp()
+                print("Команды на достижение позиций остановлены")
+            elif command == CMD.SWARM_ON:
+                try:
+                    if self.control_object.tracking:
+                        print("Режим слежения за точкой уже включен")
+                    else:
+                        self.control_object.tracking = True
+                        start_threading(self.smart_point_tracking)
+                except Exception as e:
+                    print("Ошибка при выполнении smart_goto:", e)
+
+            elif command == CMD.SMART_GOTO:
+                try:
+                    self.stop_trp()
+                    x, y, z, yaw = state.data
+                    self.control_object.threads.append(
+                        start_threading(self.smart_goto, x, y, z, yaw)
+                    )
+                except Exception as e:
+                    print("Ошибка при выполнении smart_goto:", e)
+            elif command == CMD.LED:
+                try:
+                    led_id, r, g, b = state.data
+                    self.control_object.led_control(led_id, r, g, b)
+                    print(
+                        f"LED control executed: led_id={led_id}, r={r}, g={g}, b={b}"
+                    )
+                except Exception as e:
+                    print("Ошибка при выполнении LED control:", e)
+            elif command == CMD.SAVE:
+                self.save_data()
+            elif command == CMD.SET_MOD:
+                # +-------------+-----+-----------+-----------------+
+                # |             | PID | REPULSION | UNSTABLE_VECTOR |
+                # +=============+=====+===========+=================+
+                # | SWARM_MODE  | 1   | 1         | 1               |
+                # +-------------+-----+-----------+-----------------+
+                # | MASTER_MODE | 1   | 0         | 0               |
+                # +-------------+-----+-----------+-----------------+
+                # | FLOW_MODE   | 0   | 1         | 0               |
+                # +-------------+-----+-----------+-----------------+
+                try:
+                    self.mode = int(state.data[0])
+                    if self.mode == 1:
+                        self.restore_params()
+                    elif self.mode == 2:
+                        self.restore_params()
+                        self.swarm_solver.repulsion_weight = 0
+                    elif self.mode == 3:
+                        self.restore_params()
+                        self.swarm_solver.kp = self.params["kp"]
+                        self.swarm_solver.ki = self.params["ki"]
+                        self.swarm_solver.kd = self.params["kd"]
+                        self.swarm_solver.unstable_weight = 0.0
+                except Exception as e:
+                    print("Ошибка при выполнении set_mode:", e)
+            else:
+                print("Получена неизвестная команда:", state.command)
+        else:
+            if hasattr(state, "id"):
+                if not state.id == self.numeric_id:
+                    self.env[state.id] = state
+            elif hasattr(state, "ip"):
+                self.env[state.ip] = state
+            state = self.env.values()
+            positions = [drone_data.data[1:7] for drone_data in state]
+            self.env_state_matrix = np.vstack(
+                [self.control_object.position, *positions]
+            )
 
 
 class Gion(Pion):
@@ -34,6 +184,7 @@ class Gion(Pion):
         raise NotImplementedError(
             f"{__class__.__name__} can't implement this function."
         )
+
 
     def _process_message(
         self, msg, src_component: Optional[int] = None
