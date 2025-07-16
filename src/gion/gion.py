@@ -1,12 +1,13 @@
 from typing import Optional
 
 import numpy as np
-from pion import Pion, SwarmCommunicator
+from pion import Pion
 from pionfunc.functions import (
     update_array,
     update_vector,
 )
 from pymavlink import mavutil
+from swarm_server import SwarmCommunicator
 
 
 class SwarmCommunicatorGion(SwarmCommunicator):
