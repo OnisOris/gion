@@ -11,19 +11,19 @@ from gion import Gion, SwarmCommunicatorGion
 
 params = {
     "kp": np.array([[1.2, 1.2, 1, 1, 1, 1]]) * 0.15,
-    "ki": np.zeros((1, 6)),
+    "ki": np.array([[0.1, 0.1, 0, 0, 0, 0]]),
     "kd": np.array([[1, 1, 1, 1, 1, 1]]) * 2,
     "attraction_weight": 1.0,
     "cohesion_weight": 1.0,
-    "current_velocity_weight": 8,
+    "current_velocity_weight": 1,
     "alignment_weight": 1.0,
     "repulsion_weight": 20.0,
-    "unstable_weight": 1.0,
+    "unstable_weight": 0.0,
     "noise_weight": 1.0,
     "safety_radius": 0.4,
-    "max_acceleration": 0.5,
+    "max_acceleration": 0.1,
     "max_speed": 0.3,
-    "unstable_radius": 1.5,
+    "unstable_radius": 0.1,
 }
 
 
