@@ -1,15 +1,15 @@
-from typing import Optional, Any
+from typing import Any, Optional
 
 import numpy as np
 from pion import Pion
 from pionfunc.functions import (
-    update_array,
-    update_vector,
     get_local_ip,
     start_threading,
+    update_array,
+    update_vector,
 )
 from pymavlink import mavutil
-from swarm_server import SwarmCommunicator, CMD
+from swarm_server import CMD, SwarmCommunicator
 
 
 class SwarmCommunicatorGion(SwarmCommunicator):
@@ -184,7 +184,6 @@ class Gion(Pion):
         raise NotImplementedError(
             f"{__class__.__name__} can't implement this function."
         )
-
 
     def _process_message(
         self, msg, src_component: Optional[int] = None
