@@ -24,7 +24,7 @@ class SwarmCommunicatorGion(SwarmCommunicator):
         if self.mode == 3:
             self.control_object.t_speed *= 0.9
         if np.linalg.norm(self.t_speed) < 0.02:
-            self.t_speed = np.zeros_like(self.t_speed)
+            self.control_object.t_speed = np.zeros_like(self.control_object.t_speed)
 
         if state.target_id:
             if self.unique_id != int(state.target_id):
