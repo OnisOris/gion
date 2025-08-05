@@ -24,7 +24,9 @@ class SwarmCommunicatorGion(SwarmCommunicator):
         if self.mode == 3:
             self.control_object.t_speed *= 0.9
         if np.linalg.norm(self.control_object.t_speed) < 0.02:
-            self.control_object.t_speed = np.zeros_like(self.control_object.t_speed)
+            self.control_object.t_speed = np.zeros_like(
+                self.control_object.t_speed
+            )
 
         if state.target_id:
             if self.unique_id != int(state.target_id):
@@ -186,6 +188,16 @@ class SwarmCommunicatorGion(SwarmCommunicator):
                 )
             except Exception as e:
                 print(f"[ERROR] Невозможно собрать env_state_matrix: {e}")
+
+    def restore_params(self) -> None:
+        """
+        Вовзрат параметров swarm_solver в начальное значение
+        """
+        self.swarm_solver.kp = self.params["kp"]
+        self.swarm_solver.ki = self.params["ki"]
+        self.swarm_solver.kd = self.params["kd"]
+        self.swarm_solver.repulsion_weight = self.params["repulsion_weight"]
+        self.swarm_solver.unstable_weight = self.params["unstable_weight"]
 
 
 class Gion(Pion):
