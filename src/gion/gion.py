@@ -157,11 +157,27 @@ class SwarmCommunicatorGion(SwarmCommunicator):
                     self.env[state.id] = state
             elif hasattr(state, "ip"):
                 self.env[state.ip] = state
-            state = self.env.values()
-            positions = [drone_data.data[1:7] for drone_data in state]
-            self.env_state_matrix = np.vstack(
-                [self.control_object.position, *positions]
-            )
+            state = list(self.env.values())
+            positions = []
+
+            for drone_data in state:
+                try:
+                    if (
+                        hasattr(drone_data, "data")
+                        and len(drone_data.data) >= 7
+                    ):
+                        position_slice = drone_data.data[1:7]
+                        if len(position_slice) == 6:
+                            positions.append(position_slice)
+                except Exception as e:
+                    print(f"[WARN] Ошибка при обработке позиции дрона: {e}")
+
+            try:
+                self.env_state_matrix = np.vstack(
+                    [self.control_object.position, *positions]
+                )
+            except Exception as e:
+                print(f"[ERROR] Невозможно собрать env_state_matrix: {e}")
 
 
 class Gion(Pion):
