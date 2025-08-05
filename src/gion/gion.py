@@ -137,15 +137,18 @@ class SwarmCommunicatorGion(SwarmCommunicator):
                 try:
                     self.mode = int(state.data[0])
                     if self.mode == 1:
+                        print("Swarm mode set 1")
                         self.restore_params()
                     elif self.mode == 2:
+                        print("Swarm mode set 2")
                         self.restore_params()
                         self.swarm_solver.repulsion_weight = 0
                     elif self.mode == 3:
+                        print("Swarm mode set 3")
                         self.restore_params()
-                        self.swarm_solver.kp = self.params["kp"]
-                        self.swarm_solver.ki = self.params["ki"]
-                        self.swarm_solver.kd = self.params["kd"]
+                        self.swarm_solver.kp = self.params["kp"] * 0
+                        self.swarm_solver.ki = self.params["ki"] * 0
+                        self.swarm_solver.kd = self.params["kd"] * 0
                         self.swarm_solver.unstable_weight = 0.0
                 except Exception as e:
                     print("Ошибка при выполнении set_mode:", e)
