@@ -21,13 +21,6 @@ class SwarmCommunicatorGion(SwarmCommunicator):
         :rtype: None
         """
 
-        if self.mode == 3:
-            self.control_object.t_speed *= 0.9
-        if np.linalg.norm(self.control_object.t_speed) < 0.02:
-            self.control_object.t_speed = np.zeros_like(
-                self.control_object.t_speed
-            )
-
         if state.target_id:
             if self.unique_id != int(state.target_id):
                 return
@@ -153,6 +146,7 @@ class SwarmCommunicatorGion(SwarmCommunicator):
                     elif self.mode == 3:
                         print("Swarm mode set 3")
                         self.restore_params()
+                        self.control_object.attenuation_mode = True
                         self.swarm_solver.kp = self.params["kp"] * 0
                         self.swarm_solver.ki = self.params["ki"] * 0
                         self.swarm_solver.kd = self.params["kd"] * 0
@@ -198,6 +192,7 @@ class SwarmCommunicatorGion(SwarmCommunicator):
         self.swarm_solver.kd = self.params["kd"]
         self.swarm_solver.repulsion_weight = self.params["repulsion_weight"]
         self.swarm_solver.unstable_weight = self.params["unstable_weight"]
+        self.control_object.attenuation_mode = False
 
 
 class Gion(Pion):
