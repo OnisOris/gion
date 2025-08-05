@@ -5,7 +5,6 @@ import time
 import numpy as np
 from pionfunc.functions import get_local_ip
 from rich import inspect
-from swarm_server import SwarmCommunicator
 
 from gion import Gion, SwarmCommunicatorGion
 
@@ -29,7 +28,7 @@ params = {
 
 def main():
     ip = get_local_ip()
-    for i in range(15):
+    for _ in range(15):
         if ip != "127.0.0.1":
             break
         ip = get_local_ip()
