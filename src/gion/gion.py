@@ -146,6 +146,7 @@ class SwarmCommunicatorGion(SwarmCommunicator):
                     elif self.mode == 3:
                         print("Swarm mode set 3")
                         self.restore_params()
+                        self.swarm_solver.current_velocity_weight = 0.0
                         self.control_object.attenuation_mode = True
                         self.swarm_solver.kp = self.params["kp"] * 0
                         self.swarm_solver.ki = self.params["ki"] * 0
@@ -193,6 +194,9 @@ class SwarmCommunicatorGion(SwarmCommunicator):
         self.swarm_solver.repulsion_weight = self.params["repulsion_weight"]
         self.swarm_solver.unstable_weight = self.params["unstable_weight"]
         self.control_object.attenuation_mode = False
+        self.swarm_solver.current_velocity_weight = self.params[
+            "current_velocity_weight"
+        ]
 
 
 class Gion(Pion):
