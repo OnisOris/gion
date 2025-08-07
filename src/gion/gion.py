@@ -64,21 +64,18 @@ class SwarmCommunicatorGion(SwarmCommunicator):
                 except Exception as e:
                     print("Ошибка при выполнении goto:", e)
             elif command == CMD.TAKEOFF:
-                self.stop_trp()
                 try:
                     self.control_object.takeoff()
                 except NotImplementedError:
                     print("У объекта нет takeoff")
                 print("Команда takeoff выполнена")
             elif command == CMD.LAND:
-                self.stop_trp()
                 try:
                     self.control_object.land()
                 except NotImplementedError:
                     print("У объекта нет land")
                 print("Команда land выполнена")
             elif command == CMD.ARM:
-                self.stop_trp()
                 try:
                     self.control_object.arm()
                 except NotImplementedError:
