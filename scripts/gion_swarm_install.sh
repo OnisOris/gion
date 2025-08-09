@@ -105,7 +105,7 @@ cd "$INSTALL_DIR"
 echo "🔄 Обновляем репозиторий через git pull --rebase..."
 git pull --rebase
 
-sudo -u "$REAL_USER" env PATH="$REAL_PATH" bash -c "source \"$VENV_DIR/bin/activate\" && \"$REAL_HOME/.local/bin/uv\" sync"
+sudo -u "$REAL_USER" env PATH="$REAL_PATH" bash -c "source \"$VENV_DIR/bin/activate\" && \"$REAL_HOME/.local/bin/uv\" sync -U"
 
 # Запускаем приложение
 echo "🚀 Запускаем приложение..."
