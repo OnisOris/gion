@@ -71,15 +71,15 @@ class SwarmCommunicatorGion(SwarmCommunicator):
                 print("Команда takeoff выполнена")
             elif command == CMD.LAND:
                 try:
-                    self.control_object.land()
-                except NotImplementedError:
-                    print("У объекта нет land")
-                print("Команда land выполнена")
+                    self.control_object.stop_sound()
+                except Exception as e:
+                    print("Ошибка остановке звукового сигнала: ", e)
+                print("Команда стоп звук выполнена")
             elif command == CMD.ARM:
                 try:
                     self.control_object.start_sound()
-                except NotImplementedError:
-                    print("У объекта нет arm")
+                except Exception as e:
+                    print("Ошибка запуска звука ", e)
                 print("Команда arm выполнена")
             elif command == CMD.DISARM:
                 self.stop_trp()
@@ -369,11 +369,25 @@ class Gion(Pion):
         )
 
     def stop_sound(self):
+        """
+        Остановка звукового сигнала
+        """
         return self._send_command_long(
-            command_name='STOP_SOUND',
+            command_name="STOP_SOUND",
             command=mavutil.mavlink.MAV_CMD_USER_2,
             param1=float(0x30),
-            param2=0.0
+            param2=0.0,
+        )
+
+    def start_sound(self):
+        """
+        Старт звукового сигнала
+        """
+        return self._send_command_long(
+            command_name="START_SOUND",
+            command=mavutil.mavlink.MAV_CMD_USER_2,
+            param1=float(0x30),
+            param2=1.0,
         )
 
     def stop_moving(self) -> None:
