@@ -32,6 +32,10 @@ elif "-r" in args:
     drone.reboot_board()
 elif "-s" in args:
     drone.start_sound()
+elif "-ss" in args:
+    drone.stop_sound()
+elif "-l" in args:
+    drone.led_control(255, 0, 0, 255)
 else:
     print("---")
     drone.send_speed(float(args[2]), float(args[3]), 0, 0)
