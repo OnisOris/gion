@@ -30,7 +30,7 @@ if "-c" in args:
         time.sleep(0.02)
 elif "-r" in args:
     drone.reboot_board()
-elif "-r" in args:
+elif "-s" in args:
     drone.start_sound()
 else:
     print("---")
