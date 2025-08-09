@@ -144,7 +144,7 @@ class SwarmCommunicatorGion(SwarmCommunicator):
                         print("Swarm mode set 3")
                         self.restore_params()
                         self.swarm_solver.current_velocity_weight = 0.0
-                        self.control_object.attenuation_mode = True
+                        self.swarm_solver.attenuation_mode = True
                         self.swarm_solver.kp = self.params["kp"] * 0
                         self.swarm_solver.ki = self.params["ki"] * 0
                         self.swarm_solver.kd = self.params["kd"] * 0
@@ -191,11 +191,35 @@ class SwarmCommunicatorGion(SwarmCommunicator):
         self.swarm_solver.kd = self.params["kd"]
         self.swarm_solver.repulsion_weight = self.params["repulsion_weight"]
         self.swarm_solver.unstable_weight = self.params["unstable_weight"]
-        self.control_object.attenuation_mode = False
+        self.swarm_solver.attenuation_mode = False
         self.swarm_solver.current_velocity_weight = self.params[
             "current_velocity_weight"
         ]
         self.swarm_solver.noise_weight = 1.0
+
+    def update_swarm_control(self, target_position: Array6, dt: float) -> None:
+        """
+        Вычисление нового вектора скорости и запись его в t_speed
+
+        :param target_position: Целевая позиция
+        :param dt: Шаг времени
+
+        :return: None
+        :rtype: None
+        """
+        new_vel = self.swarm_solver.solve_for_one(
+            state_matrix=self.env_state_matrix,
+            target_position=target_position,
+            dt=dt,
+        )[0]
+
+        if self.control_object.position[2] < 0.5:
+            if new_vel[2] < 0:
+                new_vel[2] = 0
+
+        self.control_object.t_speed = np.array(
+            [new_vel[0], new_vel[1], new_vel[2], 0]
+        )
 
 
 class Gion(Pion):
