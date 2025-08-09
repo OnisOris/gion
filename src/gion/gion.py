@@ -149,6 +149,7 @@ class SwarmCommunicatorGion(SwarmCommunicator):
                         self.swarm_solver.ki = self.params["ki"] * 0
                         self.swarm_solver.kd = self.params["kd"] * 0
                         self.swarm_solver.unstable_weight = 0.0
+                        self.swarm_solver.noise_weight = 0.0
                 except Exception as e:
                     print("Ошибка при выполнении set_mode:", e)
             else:
@@ -194,6 +195,7 @@ class SwarmCommunicatorGion(SwarmCommunicator):
         self.swarm_solver.current_velocity_weight = self.params[
             "current_velocity_weight"
         ]
+        self.swarm_solver.noise_weight = 1.0
 
 
 class Gion(Pion):
