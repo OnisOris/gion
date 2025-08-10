@@ -7,6 +7,7 @@ from pionfunc.functions import (
     start_threading,
     update_array,
     update_vector,
+    Array6,
 )
 from pymavlink import mavutil
 from swarm_server import CMD, SwarmCommunicator
