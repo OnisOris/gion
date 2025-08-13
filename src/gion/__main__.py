@@ -19,7 +19,7 @@ params = {
     "repulsion_weight": 20.0,
     "unstable_weight": 0.0,
     "noise_weight": 1.0,
-    "safety_radius": 0.4,
+    "safety_radius": 1,
     "max_acceleration": 0.1,
     "max_speed": 0.3,
     "unstable_radius": 0.1,
